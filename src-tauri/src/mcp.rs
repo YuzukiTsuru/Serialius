@@ -4,7 +4,7 @@ use std::time::Duration;
 use rmcp::handler::server::{router::tool::ToolRouter, wrapper::Parameters};
 use rmcp::model::{CallToolResult, Content, ServerCapabilities, ServerInfo};
 use rmcp::transport::streamable_http_server::{StreamableHttpServerConfig, StreamableHttpService};
-use rmcp::{schemars, tool, tool_router, ErrorData, ServerHandler};
+use rmcp::{schemars, tool, tool_handler, tool_router, ServerHandler};
 use serde::Deserialize;
 use tokio_util::sync::CancellationToken;
 
@@ -80,6 +80,7 @@ impl SerialiusMcp {
     }
 }
 
+#[tool_handler]
 impl ServerHandler for SerialiusMcp {
     fn get_info(&self) -> ServerInfo {
         ServerInfo {
