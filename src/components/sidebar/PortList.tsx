@@ -2,7 +2,12 @@ import { usePortStore } from "../../stores/usePortStore";
 import { PortListItem } from "./PortListItem";
 import type { PortInfo } from "../../types";
 
-export function PortList({ onConnect }: { onConnect: (port: PortInfo) => void }) {
+interface Props {
+  onConnect: (port: PortInfo) => void;
+  onNeedLogDir: () => void;
+}
+
+export function PortList({ onConnect, onNeedLogDir }: Props) {
   const availablePorts = usePortStore((s) => s.availablePorts);
 
   if (availablePorts.length === 0) {
@@ -12,7 +17,7 @@ export function PortList({ onConnect }: { onConnect: (port: PortInfo) => void })
   return (
     <div className="flex flex-col overflow-y-auto">
       {availablePorts.map((port) => (
-        <PortListItem key={port.path} port={port} onConnect={onConnect} />
+        <PortListItem key={port.path} port={port} onConnect={onConnect} onNeedLogDir={onNeedLogDir} />
       ))}
     </div>
   );

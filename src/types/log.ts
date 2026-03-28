@@ -8,3 +8,8 @@ export interface LogEntry {
   paneId?: string;
   message: string;
 }
+
+export interface PortDataLogEntry {
+  timestamp: number;
+  text: string;
+}

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { usePortStore } from "../../stores/usePortStore";
 import { usePaneStore } from "../../stores/usePaneStore";
 import { useSerialPort } from "../../hooks/useSerialPort";
@@ -22,12 +22,21 @@ export function TerminalPane({ paneId, tabId, canSplit, onSplitH, onSplitV, onCl
   const paneConfig = usePaneStore((s) => s.tabPanes[tabId]?.panes[paneId]);
   const connection = usePortStore((s) => s.connections[paneId]);
   const status = connection?.status ?? "disconnected";
+  const pending = usePortStore(useCallback((s) => s.pendingConnect?.tabId === tabId ? s.pendingConnect : null, [tabId]));
+  const clearPendingConnect = usePortStore((s) => s.clearPendingConnect);
 
   const handleData = useCallback((data: Uint8Array) => {
     writeRef.current?.(data);
   }, []);
 
   const { connect, disconnect, sendData } = useSerialPort(paneId, handleData);
+
+  useEffect(() => {
+    if (pending) {
+      connect(pending.config, pending.label);
+      clearPendingConnect();
+    }
+  }, [pending, connect, clearPendingConnect]);
 
   return (
     <div className="flex flex-col h-full w-full bg-[#0d1117] group overflow-hidden">

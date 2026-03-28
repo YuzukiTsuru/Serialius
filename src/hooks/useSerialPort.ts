@@ -2,6 +2,8 @@ import { useRef, useCallback } from "react";
 import { invoke, Channel } from "@tauri-apps/api/core";
 import { usePortStore } from "../stores/usePortStore";
 import { useLogStore } from "../stores/useLogStore";
+import { usePortLogStore } from "../stores/usePortLogStore";
+import { useSettingsStore } from "../stores/useSettingsStore";
 import type { SerialPortConfig } from "../types";
 
 interface SerialChunk {
@@ -9,6 +11,13 @@ interface SerialChunk {
 }
 
 const encoder = new TextEncoder();
+
+function buildLogPath(dir: string, portPath: string): string {
+  const portName = portPath.split("/").pop()?.replace(/\\/g, "") ?? portPath;
+  const date = new Date().toISOString().slice(0, 10);
+  const sep = dir.endsWith("/") || dir.endsWith("\\") ? "" : "/";
+  return `${dir}${sep}${portName}_${date}.log`;
+}
 
 export function useSerialPort(paneId: string, onData: (data: Uint8Array) => void) {
   const channelRef = useRef<Channel<SerialChunk> | null>(null);
@@ -24,7 +33,16 @@ export function useSerialPort(paneId: string, onData: (data: Uint8Array) => void
 
     try {
       const channel = new Channel<SerialChunk>();
-      channel.onmessage = ({ data }) => onData(new Uint8Array(data));
+      channel.onmessage = ({ data }) => {
+        const bytes = new Uint8Array(data);
+        onData(bytes);
+        const { addData, fileLogging } = usePortLogStore.getState();
+        addData(config.path, bytes);
+        const { logDirectory } = useSettingsStore.getState();
+        if (fileLogging[config.path] && logDirectory) {
+          invoke("append_log_file", { path: buildLogPath(logDirectory, config.path), data });
+        }
+      };
 
       await invoke("start_serial_read", {
         paneId,

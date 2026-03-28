@@ -5,6 +5,7 @@ interface Settings {
   defaultBaudRate: number;
   fontSize: number;
   fontFamily: string;
+  logDirectory: string;
 }
 
 interface SettingsStore extends Settings {
@@ -17,6 +18,7 @@ export const useSettingsStore = create<SettingsStore>()(
       defaultBaudRate: 115200,
       fontSize: 13,
       fontFamily: '"JetBrains Mono", "Cascadia Code", Consolas, monospace',
+      logDirectory: "",
       update: (settings) => set(settings),
     }),
     { name: "serialius-settings" }

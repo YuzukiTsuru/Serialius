@@ -29,7 +29,7 @@ export function ConnectDialog({ defaultPath, onConnect, onClose }: Props) {
     e.preventDefault();
     if (!path.trim()) return;
     onConnect(
-      { path: path.trim(), baudRate, dataBits, stopBits, parity, flowControl, timeout: 200 },
+      { path: path.trim(), baudRate, dataBits, stopBits, parity, flowControl, timeout: 50 },
       label.trim() || undefined
     );
     onClose();

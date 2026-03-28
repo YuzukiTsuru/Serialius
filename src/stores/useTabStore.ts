@@ -27,7 +27,10 @@ export const useTabStore = create<TabStore>()(
 
       removeTab: (id) => {
         const { tabs, activeTabId } = get();
-        if (tabs.length <= 1) return; // keep at least one tab
+        if (tabs.length <= 1) {
+          set({ tabs: [], activeTabId: null });
+          return;
+        }
         const remaining = tabs.filter((t) => t.id !== id);
         const newActive =
           activeTabId === id

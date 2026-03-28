@@ -169,6 +169,17 @@ pub async fn stop_serial_read(
 }
 
 #[tauri::command]
+pub async fn append_log_file(path: String, data: Vec<u8>) -> Result<(), String> {
+    use std::io::Write;
+    std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .and_then(|mut f| f.write_all(&data))
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub async fn write_serial(
     pane_id: String,
     data: Vec<u8>,

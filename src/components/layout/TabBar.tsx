@@ -1,25 +1,21 @@
 import { useState, useRef } from "react";
-import { Plus, X } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { clsx } from "clsx";
 import { useTabStore } from "../../stores/useTabStore";
-import { usePaneStore } from "../../stores/usePaneStore";
 
-export function TabBar() {
+interface Props {
+  onAddTab: () => void;
+}
+
+export function TabBar({ onAddTab }: Props) {
   const tabs = useTabStore((s) => s.tabs);
   const activeTabId = useTabStore((s) => s.activeTabId);
-  const addTab = useTabStore((s) => s.addTab);
   const removeTab = useTabStore((s) => s.removeTab);
   const setActiveTab = useTabStore((s) => s.setActiveTab);
   const renameTab = useTabStore((s) => s.renameTab);
-  const initTab = usePaneStore((s) => s.initTab);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleAddTab = () => {
-    const id = addTab();
-    initTab(id);
-  };
 
   const startEdit = (id: string, label: string) => {
     setEditingId(id);
@@ -63,20 +59,18 @@ export function TabBar() {
               {tab.label}
             </span>
           )}
-          {tabs.length > 1 && (
-            <button
-              onClick={(e) => { e.stopPropagation(); removeTab(tab.id); }}
-              className="opacity-0 group-hover:opacity-100 hover:text-red-400 transition-opacity ml-0.5"
-            >
-              <X size={11} />
-            </button>
-          )}
+          <button
+            onClick={(e) => { e.stopPropagation(); removeTab(tab.id); }}
+            className="opacity-0 group-hover:opacity-100 hover:text-red-400 transition-opacity ml-0.5"
+          >
+            <X size={11} />
+          </button>
         </div>
       ))}
       <button
-        onClick={handleAddTab}
-        title="New tab"
-        className="flex items-center justify-center w-8 h-full text-gray-600 hover:text-gray-300 hover:bg-gray-800/50 shrink-0"
+        onClick={onAddTab}
+        className="px-2.5 h-full text-gray-600 hover:text-gray-300 border-r border-gray-800 shrink-0"
+        title="New connection"
       >
         <Plus size={14} />
       </button>

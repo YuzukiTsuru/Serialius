@@ -1,7 +1,7 @@
 mod commands;
 mod state;
 
-use commands::{list_ports, start_serial_read, stop_serial_read, write_serial};
+use commands::{append_log_file, list_ports, start_serial_read, stop_serial_read, write_serial};
 use state::AppState;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -14,6 +14,7 @@ pub fn run() {
             start_serial_read,
             stop_serial_read,
             write_serial,
+            append_log_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
