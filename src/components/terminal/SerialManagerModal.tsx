@@ -3,6 +3,7 @@ import { RefreshCw, Circle, X } from "lucide-react";
 import { clsx } from "clsx";
 import { usePortDiscovery } from "../../hooks/usePortDiscovery";
 import { usePortStore } from "../../stores/usePortStore";
+import { BAUD_RATES } from "../../types";
 import type { PortInfo, SerialPortConfig } from "../../types";
 
 interface Props {
@@ -11,8 +12,6 @@ interface Props {
   onClose: () => void;
   onConnect: (port: PortInfo, config: SerialPortConfig, label?: string) => void;
 }
-
-const BAUD_RATES = [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600];
 
 const SEL = "w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-blue-500";
 

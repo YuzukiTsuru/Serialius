@@ -1,3 +1,5 @@
+export const BAUD_RATES = [110, 300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600, 1000000, 1500000];
+
 export type ConnectionStatus = "disconnected" | "connecting" | "connected" | "error";
 
 export interface SerialPortConfig {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { usePortStore } from "../../stores/usePortStore";
+import { BAUD_RATES } from "../../types";
 import type { SerialPortConfig } from "../../types";
 
 interface Props {
@@ -8,8 +9,6 @@ interface Props {
   onConnect: (config: SerialPortConfig, label?: string) => void;
   onClose: () => void;
 }
-
-const BAUD_RATES = [110, 300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600];
 
 const SEL = "bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-gray-200 outline-none focus:border-blue-500";
 const SEL_SM = "bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-gray-200 outline-none focus:border-blue-500";
