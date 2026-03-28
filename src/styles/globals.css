@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+html, body, #root {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  height: 100%;
+  width: 100%;
+}
+
+/* No scrollbars anywhere outside of intentional scroll containers */
+*, *::before, *::after {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* xterm.js container overrides */
+.xterm {
+  height: 100%;
+  padding: 4px 8px;
+}
+
+.xterm-viewport {
+  overflow-y: auto !important;
+}
+
+.xterm-screen {
+  width: 100% !important;
+}
+
+/* allotment overrides */
+.split-view-container {
+  height: 100%;
+}
+
+:root {
+  --sidebar-width: 220px;
+}
+
