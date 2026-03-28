@@ -4,6 +4,7 @@ import { usePortStore } from "../stores/usePortStore";
 import { useLogStore } from "../stores/useLogStore";
 import { usePortLogStore } from "../stores/usePortLogStore";
 import { useSettingsStore } from "../stores/useSettingsStore";
+import { buildLogPath } from "../utils/logPath";
 import type { SerialPortConfig } from "../types";
 
 interface SerialChunk {
@@ -11,13 +12,6 @@ interface SerialChunk {
 }
 
 const encoder = new TextEncoder();
-
-function buildLogPath(dir: string, portPath: string): string {
-  const portName = portPath.split("/").pop()?.replace(/\\/g, "") ?? portPath;
-  const date = new Date().toISOString().slice(0, 10);
-  const sep = dir.endsWith("/") || dir.endsWith("\\") ? "" : "/";
-  return `${dir}${sep}${portName}_${date}.log`;
-}
 
 export function useSerialPort(paneId: string, onData: (data: Uint8Array) => void) {
   const channelRef = useRef<Channel<SerialChunk> | null>(null);
@@ -36,13 +30,15 @@ export function useSerialPort(paneId: string, onData: (data: Uint8Array) => void
       channel.onmessage = ({ data }) => {
         const bytes = new Uint8Array(data);
         onData(bytes);
-        const { addData, fileLogging } = usePortLogStore.getState();
-        addData(config.path, bytes);
-        const { logDirectory } = useSettingsStore.getState();
-        if (fileLogging[config.path] && logDirectory) {
-          invoke("append_log_file", { path: buildLogPath(logDirectory, config.path), data });
-        }
+        usePortLogStore.getState().addData(config.path, bytes);
       };
+
+      // Build log path if file logging is enabled for this port
+      const { fileLogging } = usePortLogStore.getState();
+      const { logDirectory } = useSettingsStore.getState();
+      const logPath = fileLogging[config.path] && logDirectory
+        ? buildLogPath(logDirectory, config.path)
+        : null;
 
       await invoke("start_serial_read", {
         paneId,
@@ -55,6 +51,7 @@ export function useSerialPort(paneId: string, onData: (data: Uint8Array) => void
           flowControl: config.flowControl ?? "none",
         },
         onData: channel,
+        logPath,
       });
 
       channelRef.current = channel;

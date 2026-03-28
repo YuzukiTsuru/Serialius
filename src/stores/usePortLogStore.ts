@@ -1,5 +1,10 @@
 import { create } from "zustand";
+import { invoke } from "@tauri-apps/api/core";
 import type { PortDataLogEntry } from "../types";
+import { usePortStore } from "./usePortStore";
+import { useSettingsStore } from "./useSettingsStore";
+import { useLogStore } from "./useLogStore";
+import { buildLogPath } from "../utils/logPath";
 
 const MAX_ENTRIES = 200;
 const decoder = new TextDecoder("utf-8", { fatal: false });
@@ -12,7 +17,7 @@ interface PortLogStore {
   toggleFileLogging: (portPath: string) => void;
 }
 
-export const usePortLogStore = create<PortLogStore>()((set) => ({
+export const usePortLogStore = create<PortLogStore>()((set, get) => ({
   logs: {},
   fileLogging: {},
 
@@ -29,6 +34,20 @@ export const usePortLogStore = create<PortLogStore>()((set) => ({
   clearLog: (portPath) =>
     set((s) => ({ logs: { ...s.logs, [portPath]: [] } })),
 
-  toggleFileLogging: (portPath) =>
-    set((s) => ({ fileLogging: { ...s.fileLogging, [portPath]: !s.fileLogging[portPath] } })),
+  toggleFileLogging: (portPath) => {
+    const newEnabled = !get().fileLogging[portPath];
+    set((s) => ({ fileLogging: { ...s.fileLogging, [portPath]: newEnabled } }));
+
+    // Update backend log path for all panes connected to this port
+    const { logDirectory } = useSettingsStore.getState();
+    const logPath = newEnabled && logDirectory ? buildLogPath(logDirectory, portPath) : null;
+    const connections = usePortStore.getState().connections;
+    for (const [paneId, conn] of Object.entries(connections)) {
+      if (conn.portPath === portPath && conn.status === "connected") {
+        invoke("set_log_path", { paneId, logPath }).catch((e) => {
+          useLogStore.getState().addEntry({ level: "warn", paneId, message: `Log path update failed: ${e}` });
+        });
+      }
+    }
+  },
 }));

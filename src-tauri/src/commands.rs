@@ -33,11 +33,45 @@ pub struct SerialConfig {
     pub flow_control: String,
 }
 
+fn port_basename(path: &str) -> &str {
+    path.rsplit('/').next().unwrap_or(path)
+}
+
+fn port_sort_key(path: &str) -> u8 {
+    let name = port_basename(path);
+    if name.starts_with("ttyUSB") || name.starts_with("ttyACM") {
+        0
+    } else if name.contains("usbserial") || name.contains("usbmodem") {
+        1
+    } else if name.starts_with("ttyS") {
+        2
+    } else {
+        3
+    }
+}
+
+fn is_filtered_port(path: &str) -> bool {
+    let name = port_basename(path);
+    name.starts_with("tty.debug")
+        || name.starts_with("tty.Bluetooth")
+        || name.starts_with("cu.debug")
+        || name.starts_with("cu.Bluetooth")
+}
+
+fn append_to_file(path: &str, data: &[u8]) -> std::io::Result<()> {
+    std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+        .and_then(|mut f| f.write_all(data))
+}
+
 #[tauri::command]
 pub async fn list_ports() -> Result<Vec<PortInfoResponse>, String> {
     let ports = serialport::available_ports().map_err(|e| e.to_string())?;
-    Ok(ports
+    let mut result: Vec<PortInfoResponse> = ports
         .into_iter()
+        .filter(|p| !is_filtered_port(&p.port_name))
         .map(|p| {
             let (product, manufacturer, serial_number) = match p.port_type {
                 serialport::SerialPortType::UsbPort(usb) => {
@@ -52,7 +86,9 @@ pub async fn list_ports() -> Result<Vec<PortInfoResponse>, String> {
                 serial_number,
             }
         })
-        .collect())
+        .collect();
+    result.sort_by_key(|p| port_sort_key(&p.path));
+    Ok(result)
 }
 
 #[tauri::command]
@@ -60,6 +96,7 @@ pub async fn start_serial_read(
     pane_id: String,
     config: SerialConfig,
     on_data: Channel<SerialChunk>,
+    log_path: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
     // Check for duplicate without holding the lock during blocking I/O
@@ -109,8 +146,14 @@ pub async fn start_serial_read(
     let read_stop = stop_flag.clone();
     let (write_tx, write_rx) = std::sync::mpsc::sync_channel::<Vec<u8>>(32);
 
+    let log_path_shared = Arc::new(std::sync::Mutex::new(log_path));
+    let log_path_read = log_path_shared.clone();
+
     tokio::task::spawn_blocking(move || {
         let mut buf = vec![0u8; 4096];
+        let mut log_file: Option<std::io::BufWriter<std::fs::File>> = None;
+        let mut current_log_path: Option<String> = None;
+
         while !read_stop.load(Ordering::Relaxed) {
             match read_port.read(&mut buf) {
                 Ok(n) if n > 0 => {
@@ -121,6 +164,22 @@ pub async fn start_serial_read(
                         .is_err()
                     {
                         break;
+                    }
+                    if let Ok(guard) = log_path_read.try_lock() {
+                        if *guard != current_log_path {
+                            current_log_path = guard.clone();
+                            log_file = current_log_path.as_ref().and_then(|p| {
+                                std::fs::OpenOptions::new()
+                                    .create(true)
+                                    .append(true)
+                                    .open(p)
+                                    .map(std::io::BufWriter::new)
+                                    .ok()
+                            });
+                        }
+                    }
+                    if let Some(ref mut w) = log_file {
+                        let _ = w.write_all(&buf[..n]);
                     }
                 }
                 Err(ref e) if e.kind() == std::io::ErrorKind::TimedOut => {}
@@ -150,7 +209,11 @@ pub async fn start_serial_read(
             Err("Port already open (race condition)".into())
         }
         Entry::Vacant(e) => {
-            e.insert(PortHandle { write_tx, stop_flag });
+            e.insert(PortHandle {
+                write_tx,
+                stop_flag,
+                log_path: log_path_shared,
+            });
             Ok(())
         }
     }
@@ -169,14 +232,25 @@ pub async fn stop_serial_read(
 }
 
 #[tauri::command]
+pub async fn set_log_path(
+    pane_id: String,
+    log_path: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let ports = state.ports.lock().await;
+    if let Some(handle) = ports.get(&pane_id) {
+        if let Ok(mut guard) = handle.log_path.lock() {
+            *guard = log_path;
+        }
+        Ok(())
+    } else {
+        Err(format!("No open port for pane {pane_id}"))
+    }
+}
+
+#[tauri::command]
 pub async fn append_log_file(path: String, data: Vec<u8>) -> Result<(), String> {
-    use std::io::Write;
-    std::fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(&path)
-        .and_then(|mut f| f.write_all(&data))
-        .map_err(|e| e.to_string())
+    append_to_file(&path, &data).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
