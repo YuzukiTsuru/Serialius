@@ -9,19 +9,30 @@ use serde::Deserialize;
 use tokio_util::sync::CancellationToken;
 
 use crate::commands::list_ports;
-use crate::state::LineBuffers;
+use crate::state::{LineBuffers, Ports};
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 pub struct ReadSerialParams {
     #[schemars(description = "Serial port path, e.g. /dev/ttyUSB0")]
     pub port_path: String,
-    #[schemars(description = "Number of recent lines to return (default 50)")]
+    #[schemars(description = "Number of lines to return (default 50)")]
     pub lines: Option<u32>,
+    #[schemars(description = "Skip the most recent N lines (default 0). Use with lines to paginate through history.")]
+    pub offset: Option<u32>,
+}
+
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct WriteSerialParams {
+    #[schemars(description = "Serial port path, e.g. /dev/ttyUSB0")]
+    pub port_path: String,
+    #[schemars(description = "Text data to send to the serial port")]
+    pub data: String,
 }
 
 #[derive(Clone)]
 pub struct SerialiusMcp {
     line_buffers: LineBuffers,
+    ports: Ports,
     tool_router: ToolRouter<Self>,
 }
 
@@ -60,12 +71,13 @@ impl SerialiusMcp {
         Parameters(params): Parameters<ReadSerialParams>,
     ) -> String {
         let n = params.lines.unwrap_or(50) as usize;
+        let offset = params.offset.unwrap_or(0) as usize;
         let Ok(buffers) = self.line_buffers.lock() else {
             return "Error: failed to lock buffer".to_string();
         };
         match buffers.get(&params.port_path) {
             Some(buf) => {
-                let lines = buf.last_n_lines(n);
+                let lines = buf.last_n_lines_offset(n, offset);
                 if lines.is_empty() {
                     format!("Port {} connected but no data received yet", params.port_path)
                 } else {
@@ -76,6 +88,25 @@ impl SerialiusMcp {
                 "No data buffer for port {}. Is it connected?",
                 params.port_path
             ),
+        }
+    }
+
+    #[tool(description = "Send text data to a connected serial port")]
+    async fn write_serial_data(
+        &self,
+        Parameters(params): Parameters<WriteSerialParams>,
+    ) -> String {
+        let ports = self.ports.lock().await;
+        let handle = ports.values().find(|h| h.port_path == params.port_path);
+        match handle {
+            Some(h) => {
+                let bytes = params.data.into_bytes();
+                match h.write_tx.try_send(bytes) {
+                    Ok(()) => "Data sent".to_string(),
+                    Err(e) => format!("Write failed: {e}"),
+                }
+            }
+            None => format!("Port {} is not connected", params.port_path),
         }
     }
 }
@@ -100,6 +131,7 @@ pub async fn start_server(
     port: u16,
     api_key: String,
     line_buffers: LineBuffers,
+    ports: Ports,
     cancel: CancellationToken,
 ) -> Result<(), String> {
     let bind_addr: std::net::SocketAddr = format!("127.0.0.1:{port}")
@@ -119,6 +151,7 @@ pub async fn start_server(
     let service = StreamableHttpService::new(
         move || Ok(SerialiusMcp {
             line_buffers: line_buffers.clone(),
+            ports: ports.clone(),
             tool_router: SerialiusMcp::tool_router(),
         }),
         session_manager,

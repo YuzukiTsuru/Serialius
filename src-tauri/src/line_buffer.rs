@@ -34,7 +34,16 @@ impl LineBuffer {
     }
 
     pub fn last_n_lines(&self, n: usize) -> Vec<String> {
-        let skip = self.lines.len().saturating_sub(n);
-        self.lines.iter().skip(skip).cloned().collect()
+        self.last_n_lines_offset(n, 0)
+    }
+
+    pub fn last_n_lines_offset(&self, n: usize, offset: usize) -> Vec<String> {
+        let total = self.lines.len();
+        if offset >= total {
+            return Vec::new();
+        }
+        let end = total - offset;
+        let start = end.saturating_sub(n);
+        self.lines.range(start..end).cloned().collect()
     }
 }

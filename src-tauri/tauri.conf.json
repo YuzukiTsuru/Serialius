@@ -17,7 +17,9 @@
         "height": 800,
         "minWidth": 900,
         "minHeight": 500,
-        "theme": "Dark"
+        "theme": "Dark",
+        "titleBarStyle": "Transparent",
+        "backgroundColor": "#030712"
       }
     ],
     "security": {

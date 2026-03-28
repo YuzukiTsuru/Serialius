@@ -283,7 +283,7 @@ pub async fn write_serial(
     if let Some(handle) = ports.get(&pane_id) {
         handle
             .write_tx
-            .send(data)
+            .try_send(data)
             .map_err(|e| e.to_string())?;
     }
     Ok(())
@@ -304,10 +304,11 @@ pub async fn start_mcp_server(
     let cancel = tokio_util::sync::CancellationToken::new();
     let cancel_clone = cancel.clone();
     let line_buffers = state.line_buffers.clone();
+    let ports = state.ports.clone();
 
     tokio::spawn(async move {
         tokio::select! {
-            result = crate::mcp::start_server(port, api_key, line_buffers, cancel_clone) => {
+            result = crate::mcp::start_server(port, api_key, line_buffers, ports, cancel_clone) => {
                 if let Err(e) = result {
                     eprintln!("MCP server error: {e}");
                 }

@@ -6,6 +6,7 @@ use tokio::sync::Mutex;
 use crate::line_buffer::LineBuffer;
 
 pub type LineBuffers = Arc<std::sync::Mutex<HashMap<String, LineBuffer>>>;
+pub type Ports = Arc<Mutex<HashMap<String, PortHandle>>>;
 
 pub struct PortHandle {
     pub write_tx: std::sync::mpsc::SyncSender<Vec<u8>>,
@@ -19,7 +20,7 @@ pub struct McpHandle {
 }
 
 pub struct AppState {
-    pub ports: Mutex<HashMap<String, PortHandle>>,
+    pub ports: Ports,
     pub line_buffers: LineBuffers,
     pub mcp: Mutex<Option<McpHandle>>,
 }
@@ -27,7 +28,7 @@ pub struct AppState {
 impl Default for AppState {
     fn default() -> Self {
         Self {
-            ports: Mutex::new(HashMap::new()),
+            ports: Arc::new(Mutex::new(HashMap::new())),
             line_buffers: Arc::new(std::sync::Mutex::new(HashMap::new())),
             mcp: Mutex::new(None),
         }
