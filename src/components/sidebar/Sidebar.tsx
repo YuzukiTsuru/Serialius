@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Settings } from "lucide-react";
+import { Settings, Plug } from "lucide-react";
 import { usePortDiscovery } from "../../hooks/usePortDiscovery";
 import { PortList } from "./PortList";
 import { PortDiscoveryButton } from "./PortDiscoveryButton";
 import { LogSettingsModal } from "./LogSettingsModal";
+import { McpSettingsModal } from "./McpSettingsModal";
 import type { PortInfo } from "../../types";
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 export function Sidebar({ onConnectPort }: Props) {
   const { refresh } = usePortDiscovery();
   const [logSettingsOpen, setLogSettingsOpen] = useState(false);
+  const [mcpSettingsOpen, setMcpSettingsOpen] = useState(false);
 
   return (
     <div
@@ -22,6 +24,13 @@ export function Sidebar({ onConnectPort }: Props) {
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800">
         <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Ports</span>
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => setMcpSettingsOpen(true)}
+            className="text-gray-600 hover:text-gray-300"
+            title="MCP server"
+          >
+            <Plug size={13} />
+          </button>
           <button
             onClick={() => setLogSettingsOpen(true)}
             className="text-gray-600 hover:text-gray-300"
@@ -38,6 +47,7 @@ export function Sidebar({ onConnectPort }: Props) {
       </div>
 
       <LogSettingsModal open={logSettingsOpen} onClose={() => setLogSettingsOpen(false)} />
+      <McpSettingsModal open={mcpSettingsOpen} onClose={() => setMcpSettingsOpen(false)} />
     </div>
   );
 }

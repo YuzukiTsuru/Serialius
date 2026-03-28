@@ -7,7 +7,8 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 use tauri::{ipc::Channel, State};
 
-use crate::state::{AppState, PortHandle};
+use crate::line_buffer::LineBuffer;
+use crate::state::{AppState, McpHandle, PortHandle};
 
 #[derive(Serialize, Clone)]
 pub struct SerialChunk {
@@ -149,6 +150,16 @@ pub async fn start_serial_read(
     let log_path_shared = Arc::new(std::sync::Mutex::new(log_path));
     let log_path_read = log_path_shared.clone();
 
+    let line_buffers = state.line_buffers.clone();
+    let port_path = config.path.clone();
+
+    // Pre-insert buffer before the loop so the hot path avoids cloning port_path
+    if let Ok(mut buffers) = line_buffers.lock() {
+        buffers
+            .entry(port_path.clone())
+            .or_insert_with(|| LineBuffer::new(1000));
+    }
+
     tokio::task::spawn_blocking(move || {
         let mut buf = vec![0u8; 4096];
         let mut log_file: Option<std::io::BufWriter<std::fs::File>> = None;
@@ -164,6 +175,11 @@ pub async fn start_serial_read(
                         .is_err()
                     {
                         break;
+                    }
+                    if let Ok(mut buffers) = line_buffers.try_lock() {
+                        if let Some(lb) = buffers.get_mut(&port_path) {
+                            lb.push_bytes(&buf[..n]);
+                        }
                     }
                     if let Ok(guard) = log_path_read.try_lock() {
                         if *guard != current_log_path {
@@ -213,6 +229,7 @@ pub async fn start_serial_read(
                 write_tx,
                 stop_flag,
                 log_path: log_path_shared,
+                port_path: config.path,
             });
             Ok(())
         }
@@ -227,6 +244,9 @@ pub async fn stop_serial_read(
     let mut ports = state.ports.lock().await;
     if let Some(handle) = ports.remove(&pane_id) {
         handle.stop_flag.store(true, Ordering::Relaxed);
+        if let Ok(mut buffers) = state.line_buffers.lock() {
+            buffers.remove(&handle.port_path);
+        }
     }
     Ok(())
 }
@@ -267,4 +287,52 @@ pub async fn write_serial(
             .map_err(|e| e.to_string())?;
     }
     Ok(())
+}
+
+#[tauri::command]
+pub async fn start_mcp_server(
+    port: u16,
+    api_key: String,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let mut mcp = state.mcp.lock().await;
+    if mcp.is_some() {
+        return Err("MCP server already running".into());
+    }
+
+    let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel::<()>();
+    let cancel = tokio_util::sync::CancellationToken::new();
+    let cancel_clone = cancel.clone();
+    let line_buffers = state.line_buffers.clone();
+
+    tokio::spawn(async move {
+        tokio::select! {
+            result = crate::mcp::start_server(port, api_key, line_buffers, cancel_clone) => {
+                if let Err(e) = result {
+                    eprintln!("MCP server error: {e}");
+                }
+            }
+            _ = shutdown_rx => {
+                cancel.cancel();
+            }
+        }
+    });
+
+    *mcp = Some(McpHandle { shutdown: shutdown_tx });
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn stop_mcp_server(state: State<'_, AppState>) -> Result<(), String> {
+    let mut mcp = state.mcp.lock().await;
+    if let Some(handle) = mcp.take() {
+        let _ = handle.shutdown.send(());
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_mcp_status(state: State<'_, AppState>) -> Result<bool, String> {
+    let mcp = state.mcp.lock().await;
+    Ok(mcp.is_some())
 }
