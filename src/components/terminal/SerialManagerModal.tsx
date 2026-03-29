@@ -9,7 +9,7 @@ import type { PortInfo, SerialPortConfig } from "../../types";
 
 interface Props {
   open: boolean;
-  initialPort?: PortInfo;
+  initialPort?: PortInfo | string;
   onClose: () => void;
   onConnect: (port: PortInfo, config: SerialPortConfig, label?: string) => void;
 }
@@ -32,7 +32,8 @@ export function SerialManagerModal({ open, initialPort, onClose, onConnect }: Pr
 
   useEffect(() => {
     if (open) {
-      setPortPath(initialPort?.path ?? "");
+      const initialPath = typeof initialPort === "string" ? initialPort : initialPort?.path ?? "";
+      setPortPath(initialPath);
       setName("");
       setBaudRate(115200);
       setDataBits(8);

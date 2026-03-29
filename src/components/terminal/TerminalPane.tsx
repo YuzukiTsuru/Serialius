@@ -6,7 +6,8 @@ import { useSerialPort } from "../../hooks/useSerialPort";
 import { PaneHeader } from "./PaneHeader";
 import { TerminalView } from "./TerminalView";
 import { PaneEmptySlot } from "./PaneEmptySlot";
-import { ConnectDialog } from "./ConnectDialog";
+import { SerialManagerModal } from "./SerialManagerModal";
+import type { SerialPortConfig } from "../../types";
 
 interface Props {
   paneId: string;
@@ -31,6 +32,11 @@ export function TerminalPane({ paneId, tabId, canSplit, onSplitH, onSplitV, onCl
   }, []);
 
   const { connect, disconnect, sendData } = useSerialPort(paneId, handleData);
+
+  const handleModalConnect = useCallback((_port: { path: string }, config: SerialPortConfig, label?: string) => {
+    connect(config, label);
+    setShowDialog(false);
+  }, [connect]);
 
   useEffect(() => {
     if (pending) {
@@ -66,10 +72,11 @@ export function TerminalPane({ paneId, tabId, canSplit, onSplitH, onSplitV, onCl
 
       <AnimatePresence>
         {showDialog && (
-          <ConnectDialog
-            defaultPath={paneConfig?.portPath ?? undefined}
-            onConnect={connect}
+          <SerialManagerModal
+            open={showDialog}
+            initialPort={paneConfig?.portPath ?? undefined}
             onClose={() => setShowDialog(false)}
+            onConnect={handleModalConnect}
           />
         )}
       </AnimatePresence>
