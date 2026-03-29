@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { motion } from "framer-motion";
 import { X, SplitSquareHorizontal, SplitSquareVertical, Settings, Circle } from "lucide-react";
 import type { ConnectionStatus } from "../../types";
 
@@ -27,32 +28,67 @@ export function PaneHeader({ portPath, label, status, baudRate, onDisconnect, on
 
   return (
     <div className="flex items-center h-8 px-2 gap-1.5 bg-gray-850 border-b border-gray-800 shrink-0 select-none">
-      <Circle size={8} className={clsx("shrink-0", statusDot[status])} />
+      <motion.div
+        animate={
+          status === "connecting"
+            ? { scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }
+            : status === "error"
+              ? { scale: [1, 1.2, 1] }
+              : {}
+        }
+        transition={{ repeat: status === "connecting" || status === "error" ? Infinity : 0, duration: 1 }}
+      >
+        <Circle size={8} className={clsx("shrink-0", statusDot[status])} />
+      </motion.div>
       <span className="flex-1 text-xs font-mono text-gray-300 truncate">
         {displayName}
         {subtitle && <span className="text-gray-600 ml-1">{subtitle}</span>}
         {baudRate && status === "connected" && <span className="text-gray-600 ml-1">{baudRate}</span>}
       </span>
 
-      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100">
         {canSplit && (
           <>
-            <button onClick={onSplitH} title="Split horizontal" className="p-1 text-gray-600 hover:text-gray-300">
+            <motion.button
+              onClick={onSplitH}
+              title="Split horizontal"
+              className="p-1 text-gray-600 hover:text-gray-300"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
               <SplitSquareHorizontal size={13} />
-            </button>
-            <button onClick={onSplitV} title="Split vertical" className="p-1 text-gray-600 hover:text-gray-300">
+            </motion.button>
+            <motion.button
+              onClick={onSplitV}
+              title="Split vertical"
+              className="p-1 text-gray-600 hover:text-gray-300"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
               <SplitSquareVertical size={13} />
-            </button>
+            </motion.button>
           </>
         )}
         {status === "connected" && (
-          <button onClick={onDisconnect} title="Disconnect" className="p-1 text-gray-600 hover:text-yellow-400">
+          <motion.button
+            onClick={onDisconnect}
+            title="Disconnect"
+            className="p-1 text-gray-600 hover:text-yellow-400"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
             <Settings size={13} />
-          </button>
+          </motion.button>
         )}
-        <button onClick={onClose} title="Close pane" className="p-1 text-gray-600 hover:text-red-400">
+        <motion.button
+          onClick={onClose}
+          title="Close pane"
+          className="p-1 text-gray-600 hover:text-red-400"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
           <X size={13} />
-        </button>
+        </motion.button>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Settings, Plug } from "lucide-react";
+import { motion } from "framer-motion";
 import { usePortDiscovery } from "../../hooks/usePortDiscovery";
 import { PortList } from "./PortList";
 import { PortDiscoveryButton } from "./PortDiscoveryButton";
@@ -24,20 +25,24 @@ export function Sidebar({ onConnectPort }: Props) {
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800">
         <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Ports</span>
         <div className="flex items-center gap-1">
-          <button
+          <motion.button
             onClick={() => setMcpSettingsOpen(true)}
             className="text-gray-600 hover:text-gray-300"
             title="MCP server"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
             <Plug size={13} />
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={() => setLogSettingsOpen(true)}
             className="text-gray-600 hover:text-gray-300"
             title="Log settings"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
             <Settings size={13} />
-          </button>
+          </motion.button>
           <PortDiscoveryButton onRefresh={refresh} />
         </div>
       </div>
