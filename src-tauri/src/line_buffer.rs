@@ -33,10 +33,6 @@ impl LineBuffer {
         }
     }
 
-    pub fn last_n_lines(&self, n: usize) -> Vec<String> {
-        self.last_n_lines_offset(n, 0)
-    }
-
     pub fn last_n_lines_offset(&self, n: usize, offset: usize) -> Vec<String> {
         let total = self.lines.len();
         if offset >= total {

@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use rmcp::handler::server::{router::tool::ToolRouter, wrapper::Parameters};
-use rmcp::model::{CallToolResult, Content, ServerCapabilities, ServerInfo};
+use rmcp::model::{ServerCapabilities, ServerInfo};
 use rmcp::transport::streamable_http_server::{StreamableHttpServerConfig, StreamableHttpService};
 use rmcp::{schemars, tool, tool_handler, tool_router, ServerHandler};
 use serde::Deserialize;
