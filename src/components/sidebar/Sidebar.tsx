@@ -1,11 +1,8 @@
 import { useState } from "react";
-import { Settings, Plug } from "lucide-react";
+import { Settings } from "lucide-react";
 import { motion } from "framer-motion";
-import { usePortDiscovery } from "../../hooks/usePortDiscovery";
 import { PortList } from "./PortList";
-import { PortDiscoveryButton } from "./PortDiscoveryButton";
-import { LogSettingsModal } from "./LogSettingsModal";
-import { McpSettingsModal } from "./McpSettingsModal";
+import { SettingsModal } from "./SettingsModal";
 import { buttonAnimations } from "../../lib/animations";
 import type { PortInfo } from "../../types";
 
@@ -14,9 +11,7 @@ interface Props {
 }
 
 export function Sidebar({ onConnectPort }: Props) {
-  const { refresh } = usePortDiscovery();
-  const [logSettingsOpen, setLogSettingsOpen] = useState(false);
-  const [mcpSettingsOpen, setMcpSettingsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <div
@@ -27,31 +22,21 @@ export function Sidebar({ onConnectPort }: Props) {
         <span className="text-xs font-semibold text-gray-500 tracking-wider">Serialium</span>
         <div className="flex items-center gap-1">
           <motion.button
-            onClick={() => setMcpSettingsOpen(true)}
+            onClick={() => setSettingsOpen(true)}
             className="text-gray-600 hover:text-gray-300"
-            title="MCP server"
-            {...buttonAnimations.icon}
-          >
-            <Plug size={13} />
-          </motion.button>
-          <motion.button
-            onClick={() => setLogSettingsOpen(true)}
-            className="text-gray-600 hover:text-gray-300"
-            title="Log settings"
+            title="Settings"
             {...buttonAnimations.icon}
           >
             <Settings size={13} />
           </motion.button>
-          <PortDiscoveryButton onRefresh={refresh} />
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <PortList onConnect={onConnectPort} onNeedLogDir={() => setLogSettingsOpen(true)} />
+        <PortList onConnect={onConnectPort} onNeedLogDir={() => setSettingsOpen(true)} />
       </div>
 
-      <LogSettingsModal open={logSettingsOpen} onClose={() => setLogSettingsOpen(false)} />
-      <McpSettingsModal open={mcpSettingsOpen} onClose={() => setMcpSettingsOpen(false)} />
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }
