@@ -24,7 +24,7 @@ export function Sidebar({ onConnectPort }: Props) {
       style={{ width: "var(--sidebar-width)" }}
     >
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800">
-        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Ports</span>
+        <span className="text-xs font-semibold text-gray-500 tracking-wider">Serialium</span>
         <div className="flex items-center gap-1">
           <motion.button
             onClick={() => setMcpSettingsOpen(true)}
