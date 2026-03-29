@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSettingsStore } from "../../stores/useSettingsStore";
+import { modalVariants, modalTransition, buttonAnimations } from "../../lib/animations";
 
 interface Props {
   open: boolean;
@@ -27,18 +28,20 @@ export function LogSettingsModal({ open, onClose }: Props) {
       {open && (
         <motion.div
           key="log-settings-modal"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          variants={modalVariants.backdrop}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={modalTransition.backdrop}
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center"
           onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            variants={modalVariants.content}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={modalTransition.content}
             className="bg-gray-900 rounded-lg w-96 border border-gray-700"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
@@ -46,8 +49,7 @@ export function LogSettingsModal({ open, onClose }: Props) {
               <motion.button
                 onClick={onClose}
                 className="text-gray-500 hover:text-gray-300"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                {...buttonAnimations.icon}
               >
                 <X size={16} />
               </motion.button>
@@ -70,16 +72,14 @@ export function LogSettingsModal({ open, onClose }: Props) {
             <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-800">
               <motion.button
                 onClick={onClose}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                {...buttonAnimations.pill}
                 className="px-3 py-1.5 text-xs text-gray-400 hover:text-gray-200 rounded border border-gray-700 hover:border-gray-500"
               >
                 Cancel
               </motion.button>
               <motion.button
                 onClick={handleSave}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                {...buttonAnimations.pill}
                 className="px-4 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-500"
               >
                 Save

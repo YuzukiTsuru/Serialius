@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { PortInfo } from "../../types";
 import { usePortStore } from "../../stores/usePortStore";
 import { PortLogPanel } from "./PortLogPanel";
+import { modalVariants, modalTransition, buttonAnimations } from "../../lib/animations";
 
 interface Props {
   port: PortInfo;
@@ -69,8 +70,7 @@ export function PortListItem({ port, onConnect, onNeedLogDir }: Props) {
             onClick={() => onConnect(port)}
             className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-blue-400"
             title="Connect"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            {...buttonAnimations.icon}
           >
             <Plug size={13} />
           </motion.button>
@@ -80,10 +80,11 @@ export function PortListItem({ port, onConnect, onNeedLogDir }: Props) {
       <AnimatePresence>
         {isConnected && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
+            variants={modalVariants.slideDown}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={modalTransition.slideDown}
           >
             <motion.div
               role="button"
@@ -102,10 +103,11 @@ export function PortListItem({ port, onConnect, onNeedLogDir }: Props) {
             <AnimatePresence>
               {logsOpen && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
+                  variants={modalVariants.slideDown}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  transition={modalTransition.slideDown}
                 >
                   <PortLogPanel portPath={port.path} onNeedLogDir={onNeedLogDir} />
                 </motion.div>

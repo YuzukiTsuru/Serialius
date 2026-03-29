@@ -6,6 +6,7 @@ import { PortList } from "./PortList";
 import { PortDiscoveryButton } from "./PortDiscoveryButton";
 import { LogSettingsModal } from "./LogSettingsModal";
 import { McpSettingsModal } from "./McpSettingsModal";
+import { buttonAnimations } from "../../lib/animations";
 import type { PortInfo } from "../../types";
 
 interface Props {
@@ -29,8 +30,7 @@ export function Sidebar({ onConnectPort }: Props) {
             onClick={() => setMcpSettingsOpen(true)}
             className="text-gray-600 hover:text-gray-300"
             title="MCP server"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            {...buttonAnimations.icon}
           >
             <Plug size={13} />
           </motion.button>
@@ -38,8 +38,7 @@ export function Sidebar({ onConnectPort }: Props) {
             onClick={() => setLogSettingsOpen(true)}
             className="text-gray-600 hover:text-gray-300"
             title="Log settings"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            {...buttonAnimations.icon}
           >
             <Settings size={13} />
           </motion.button>

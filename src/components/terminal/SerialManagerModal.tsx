@@ -6,6 +6,7 @@ import { usePortDiscovery } from "../../hooks/usePortDiscovery";
 import { usePortStore } from "../../stores/usePortStore";
 import { BAUD_RATES } from "../../types";
 import type { PortInfo, SerialPortConfig } from "../../types";
+import { modalVariants, modalTransition, buttonAnimations } from "../../lib/animations";
 
 interface Props {
   open: boolean;
@@ -62,19 +63,21 @@ export function SerialManagerModal({ open, initialPort, onClose, onConnect }: Pr
   return (
     <motion.div
       key="serial-manager-modal"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      variants={modalVariants.backdrop}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={modalTransition.backdrop}
       className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       onKeyDown={handleKeyDown}
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        variants={modalVariants.content}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        transition={modalTransition.content}
         className="bg-gray-900 rounded-lg w-[700px] flex flex-col overflow-hidden border border-gray-700 max-h-[80vh]"
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
@@ -82,8 +85,7 @@ export function SerialManagerModal({ open, initialPort, onClose, onConnect }: Pr
           <motion.button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-300"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            {...buttonAnimations.icon}
           >
             <X size={16} />
           </motion.button>
@@ -98,15 +100,9 @@ export function SerialManagerModal({ open, initialPort, onClose, onConnect }: Pr
                 disabled={isScanning}
                 className="text-gray-500 hover:text-gray-300 disabled:opacity-40"
                 title="Refresh"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                {...buttonAnimations.icon}
               >
-                <motion.div
-                  animate={isScanning ? { rotate: 360 } : { rotate: 0 }}
-                  transition={isScanning ? { repeat: Infinity, duration: 1, ease: "linear" } : { duration: 0 }}
-                >
-                  <RefreshCw size={12} />
-                </motion.div>
+                <RefreshCw size={12} className={isScanning ? "animate-spin" : ""} />
               </motion.button>
             </div>
             <div className="flex-1 overflow-y-auto">
@@ -213,16 +209,14 @@ export function SerialManagerModal({ open, initialPort, onClose, onConnect }: Pr
         <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-800">
           <motion.button
             onClick={onClose}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            {...buttonAnimations.pill}
             className="px-3 py-1.5 text-xs text-gray-400 hover:text-gray-200 rounded border border-gray-700 hover:border-gray-500"
           >
             Cancel
           </motion.button>
           <motion.button
             onClick={handleConnect}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            {...buttonAnimations.pill}
             disabled={!portPath.trim()}
             className="px-4 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed"
           >

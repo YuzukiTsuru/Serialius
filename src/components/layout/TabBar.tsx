@@ -3,6 +3,7 @@ import { X, Plus } from "lucide-react";
 import { clsx } from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTabStore } from "../../stores/useTabStore";
+import { buttonAnimations } from "../../lib/animations";
 
 interface Props {
   onAddTab: () => void;
@@ -75,8 +76,7 @@ export function TabBar({ onAddTab }: Props) {
             <motion.button
               onClick={(e) => { e.stopPropagation(); removeTab(tab.id); }}
               className="opacity-0 group-hover:opacity-100 hover:text-red-400 ml-0.5"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              {...buttonAnimations.icon}
             >
               <X size={11} />
             </motion.button>
@@ -87,8 +87,7 @@ export function TabBar({ onAddTab }: Props) {
         onClick={onAddTab}
         className="px-2.5 h-full text-gray-600 hover:text-gray-300 border-r border-gray-800 shrink-0"
         title="New connection"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        {...buttonAnimations.icon}
       >
         <Plus size={14} />
       </motion.button>

@@ -2,6 +2,7 @@ import { clsx } from "clsx";
 import { motion } from "framer-motion";
 import { X, SplitSquareHorizontal, SplitSquareVertical, Settings, Circle } from "lucide-react";
 import type { ConnectionStatus } from "../../types";
+import { buttonAnimations } from "../../lib/animations";
 
 interface Props {
   portPath: string | null;
@@ -32,11 +33,9 @@ export function PaneHeader({ portPath, label, status, baudRate, onDisconnect, on
         animate={
           status === "connecting"
             ? { scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }
-            : status === "error"
-              ? { scale: [1, 1.2, 1] }
-              : {}
+            : {}
         }
-        transition={{ repeat: status === "connecting" || status === "error" ? Infinity : 0, duration: 1 }}
+        transition={{ repeat: status === "connecting" ? Infinity : 0, duration: 1 }}
       >
         <Circle size={8} className={clsx("shrink-0", statusDot[status])} />
       </motion.div>
@@ -53,8 +52,7 @@ export function PaneHeader({ portPath, label, status, baudRate, onDisconnect, on
               onClick={onSplitH}
               title="Split horizontal"
               className="p-1 text-gray-600 hover:text-gray-300"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              {...buttonAnimations.icon}
             >
               <SplitSquareHorizontal size={13} />
             </motion.button>
@@ -62,8 +60,7 @@ export function PaneHeader({ portPath, label, status, baudRate, onDisconnect, on
               onClick={onSplitV}
               title="Split vertical"
               className="p-1 text-gray-600 hover:text-gray-300"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              {...buttonAnimations.icon}
             >
               <SplitSquareVertical size={13} />
             </motion.button>
@@ -74,8 +71,7 @@ export function PaneHeader({ portPath, label, status, baudRate, onDisconnect, on
             onClick={onDisconnect}
             title="Disconnect"
             className="p-1 text-gray-600 hover:text-yellow-400"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            {...buttonAnimations.icon}
           >
             <Settings size={13} />
           </motion.button>
@@ -84,8 +80,7 @@ export function PaneHeader({ portPath, label, status, baudRate, onDisconnect, on
           onClick={onClose}
           title="Close pane"
           className="p-1 text-gray-600 hover:text-red-400"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+          {...buttonAnimations.icon}
         >
           <X size={13} />
         </motion.button>

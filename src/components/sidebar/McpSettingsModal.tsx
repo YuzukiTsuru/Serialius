@@ -3,6 +3,7 @@ import { X, Copy, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { invoke } from "@tauri-apps/api/core";
 import { useSettingsStore } from "../../stores/useSettingsStore";
+import { modalVariants, modalTransition, buttonAnimations } from "../../lib/animations";
 
 interface Props {
   open: boolean;
@@ -63,18 +64,20 @@ export function McpSettingsModal({ open, onClose }: Props) {
       {open && (
         <motion.div
           key="mcp-modal"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          variants={modalVariants.backdrop}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={modalTransition.backdrop}
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center"
           onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            variants={modalVariants.content}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={modalTransition.content}
             className="bg-gray-900 rounded-lg w-96 border border-gray-700"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
@@ -82,8 +85,7 @@ export function McpSettingsModal({ open, onClose }: Props) {
               <motion.button
                 onClick={onClose}
                 className="text-gray-500 hover:text-gray-300"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                {...buttonAnimations.icon}
               >
                 <X size={16} />
               </motion.button>
@@ -100,8 +102,7 @@ export function McpSettingsModal({ open, onClose }: Props) {
                   <span className="text-xs text-gray-400">{running ? "Running" : "Stopped"}</span>
                   <motion.button
                     onClick={handleToggle}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    {...buttonAnimations.pill}
                     className={`px-2.5 py-1 text-xs rounded ${
                       running
                         ? "bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-800"
@@ -161,8 +162,7 @@ export function McpSettingsModal({ open, onClose }: Props) {
                     onClick={() => navigator.clipboard.writeText(apiKey)}
                     className="px-1.5 text-gray-500 hover:text-gray-300"
                     title="Copy key"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                    {...buttonAnimations.icon}
                   >
                     <Copy size={13} />
                   </motion.button>
@@ -172,9 +172,11 @@ export function McpSettingsModal({ open, onClose }: Props) {
               <AnimatePresence>
                 {running && (
                   <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
+                    variants={modalVariants.slideDown}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    transition={modalTransition.slideDown}
                     className="flex flex-col gap-1"
                   >
                     <label className="text-[11px] text-gray-500 uppercase tracking-wider">Endpoint</label>
@@ -186,8 +188,7 @@ export function McpSettingsModal({ open, onClose }: Props) {
                         onClick={() => navigator.clipboard.writeText(`http://127.0.0.1:${port}/mcp`)}
                         className="px-1.5 text-gray-500 hover:text-gray-300"
                         title="Copy URL"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                        {...buttonAnimations.icon}
                       >
                         <Copy size={13} />
                       </motion.button>
@@ -196,19 +197,17 @@ export function McpSettingsModal({ open, onClose }: Props) {
                 )}
               </AnimatePresence>
             </div>
-        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-800">
+            <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-800">
               <motion.button
                 onClick={onClose}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                {...buttonAnimations.pill}
                 className="px-3 py-1.5 text-xs text-gray-400 hover:text-gray-200 rounded border border-gray-700 hover:border-gray-500"
               >
                 Close
               </motion.button>
               <motion.button
                 onClick={handleSave}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                {...buttonAnimations.pill}
                 className="px-4 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-500"
               >
                 Save
