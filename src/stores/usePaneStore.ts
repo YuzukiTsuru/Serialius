@@ -48,6 +48,7 @@ function removeLeaf(node: LayoutNode, targetId: string): LayoutNode | null {
   }
   const left = removeLeaf(node.children[0], targetId);
   const right = removeLeaf(node.children[1], targetId);
+  if (left === null && right === null) return null;
   if (left === null) return right;
   if (right === null) return left;
   return { ...node, children: [left, right] };

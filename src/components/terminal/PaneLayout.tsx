@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
 import { usePaneStore } from "../../stores/usePaneStore";
@@ -6,6 +6,11 @@ import { TerminalPane } from "./TerminalPane";
 import type { LayoutNode } from "../../types";
 
 const MAX_PANES = 8;
+
+function getLeafIds(node: LayoutNode): string[] {
+  if (node.type === "leaf") return [node.paneId];
+  return [...getLeafIds(node.children[0]), ...getLeafIds(node.children[1])];
+}
 
 interface LayoutRendererProps {
   node: LayoutNode;
@@ -20,6 +25,7 @@ function LayoutRenderer({ node, tabId, paneCount, onUpdateNode, onSplit, onClose
   if (node.type === "leaf") {
     return (
       <TerminalPane
+        key={node.paneId}
         paneId={node.paneId}
         tabId={tabId}
         canSplit={paneCount < MAX_PANES}
@@ -34,6 +40,7 @@ function LayoutRenderer({ node, tabId, paneCount, onUpdateNode, onSplit, onClose
 
   return (
     <Allotment
+      key={`${node.direction}-${node.children[0].type === 'leaf' ? node.children[0].paneId : 'split'}-${node.children[1].type === 'leaf' ? node.children[1].paneId : 'split'}`}
       vertical={isVertical}
       defaultSizes={node.sizes}
       onChange={(sizes) => {
@@ -82,8 +89,11 @@ export function PaneLayout({ tabId }: Props) {
 
   if (!tabState) return null;
 
+  // Create a stable key based on layout structure to force re-render when structure changes
+  const layoutKey = useMemo(() => getLeafIds(tabState.layout).join("-"), [tabState.layout]);
+
   return (
-    <div className="w-full h-full overflow-hidden">
+    <div key={layoutKey} className="w-full h-full overflow-hidden">
       <LayoutRenderer
         node={tabState.layout}
         tabId={tabId}
