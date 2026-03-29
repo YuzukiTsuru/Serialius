@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { usePortStore } from "../../stores/usePortStore";
 import { BAUD_RATES } from "../../types";
 import type { SerialPortConfig } from "../../types";
@@ -36,33 +36,33 @@ export function ConnectDialog({ defaultPath, onConnect, onClose }: Props) {
   };
 
   return (
-    <AnimatePresence>
+    <motion.div
+      key="connect-dialog"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="bg-gray-900 border border-gray-700 rounded-lg shadow-xl w-80 p-4"
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="bg-gray-900 border border-gray-700 rounded-lg shadow-xl w-80 p-4"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-200">Open Serial Port</h2>
-            <motion.button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-300"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <X size={16} />
-            </motion.button>
-          </div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-gray-200">Open Serial Port</h2>
+          <motion.button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-300"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <X size={16} />
+          </motion.button>
+        </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <label className="flex flex-col gap-1">
@@ -163,6 +163,5 @@ export function ConnectDialog({ defaultPath, onConnect, onClose }: Props) {
         </form>
       </motion.div>
     </motion.div>
-    </AnimatePresence>
   );
 }

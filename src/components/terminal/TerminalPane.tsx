@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
 import { usePortStore } from "../../stores/usePortStore";
 import { usePaneStore } from "../../stores/usePaneStore";
 import { useSerialPort } from "../../hooks/useSerialPort";
@@ -63,13 +64,15 @@ export function TerminalPane({ paneId, tabId, canSplit, onSplitH, onSplitV, onCl
         )}
       </div>
 
-      {showDialog && (
-        <ConnectDialog
-          defaultPath={paneConfig?.portPath ?? undefined}
-          onConnect={connect}
-          onClose={() => setShowDialog(false)}
-        />
-      )}
+      <AnimatePresence>
+        {showDialog && (
+          <ConnectDialog
+            defaultPath={paneConfig?.portPath ?? undefined}
+            onConnect={connect}
+            onClose={() => setShowDialog(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

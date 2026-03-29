@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { Sidebar } from "../sidebar/Sidebar";
 import { MainArea } from "./MainArea";
 import { ResizeHandle } from "./ResizeHandle";
@@ -32,12 +33,16 @@ export function AppShell() {
       <Sidebar onConnectPort={openManager} />
       <ResizeHandle />
       <MainArea onAddTab={openManager} />
-      <SerialManagerModal
-        open={managerOpen}
-        initialPort={managerPort}
-        onClose={() => setManagerOpen(false)}
-        onConnect={handleManagerConnect}
-      />
+      <AnimatePresence>
+        {managerOpen && (
+          <SerialManagerModal
+            open={managerOpen}
+            initialPort={managerPort}
+            onClose={() => setManagerOpen(false)}
+            onConnect={handleManagerConnect}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
