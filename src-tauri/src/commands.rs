@@ -23,6 +23,14 @@ pub struct PortInfoResponse {
     pub serial_number: Option<String>,
 }
 
+#[derive(Serialize, Clone)]
+pub struct LogFileEntry {
+    pub path: String,
+    pub name: String,
+    pub size: u64,
+    pub modified: u64,
+}
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SerialConfig {
@@ -336,4 +344,48 @@ pub async fn stop_mcp_server(state: State<'_, AppState>) -> Result<(), String> {
 pub async fn get_mcp_status(state: State<'_, AppState>) -> Result<bool, String> {
     let mcp = state.mcp.lock().await;
     Ok(mcp.is_some())
+}
+
+#[tauri::command]
+pub async fn list_log_files(
+    directory: String,
+    port_name: Option<String>,
+) -> Result<Vec<LogFileEntry>, String> {
+    let dir = std::path::Path::new(&directory);
+    let mut entries: Vec<LogFileEntry> = vec![];
+
+    let read_dir = std::fs::read_dir(dir).map_err(|e| e.to_string())?;
+    for entry in read_dir {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let path = entry.path();
+
+        if path.extension().map(|e| e == "log").unwrap_or(false) {
+            let name = path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+
+            if let Some(ref port) = port_name {
+                if !name.starts_with(port) {
+                    continue;
+                }
+            }
+
+            let metadata = entry.metadata().map_err(|e| e.to_string())?;
+            let modified = metadata
+                .modified()
+                .ok()
+                .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                .map(|d| d.as_secs())
+                .unwrap_or(0);
+
+            entries.push(LogFileEntry {
+                path: path.to_string_lossy().into_owned(),
+                name,
+                size: metadata.len(),
+                modified,
+            });
+        }
+    }
+
+    entries.sort_by(|a, b| b.modified.cmp(&a.modified));
+
+    Ok(entries)
 }

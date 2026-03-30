@@ -2,15 +2,17 @@ import { useState } from "react";
 import { Settings } from "lucide-react";
 import { motion } from "framer-motion";
 import { PortList } from "./PortList";
+import { PortHistoryList } from "./PortHistoryList";
 import { SettingsModal } from "./SettingsModal";
 import { buttonAnimations } from "../../lib/animations";
-import type { PortInfo } from "../../types";
+import type { PortInfo, SerialPortConfig } from "../../types";
 
 interface Props {
   onConnectPort: (port: PortInfo, paneId?: string) => void;
+  onConnectWithConfig: (port: PortInfo, config: SerialPortConfig, label?: string) => void;
 }
 
-export function Sidebar({ onConnectPort }: Props) {
+export function Sidebar({ onConnectPort, onConnectWithConfig }: Props) {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
@@ -33,7 +35,11 @@ export function Sidebar({ onConnectPort }: Props) {
       </div>
 
       <div className="flex-1 overflow-y-auto">
+        <div className="px-3 py-1">
+          <span className="text-[10px] text-gray-500 uppercase tracking-wider">Ports</span>
+        </div>
         <PortList onConnect={onConnectPort} onNeedLogDir={() => setSettingsOpen(true)} />
+        <PortHistoryList onConnect={onConnectWithConfig} />
       </div>
 
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />

@@ -4,6 +4,7 @@ import { usePortStore } from "../stores/usePortStore";
 import { useLogStore } from "../stores/useLogStore";
 import { usePortLogStore } from "../stores/usePortLogStore";
 import { useSettingsStore } from "../stores/useSettingsStore";
+import { usePortHistoryStore } from "../stores/usePortHistoryStore";
 import { buildLogPath } from "../utils/logPath";
 import type { SerialPortConfig } from "../types";
 
@@ -56,6 +57,13 @@ export function useSerialPort(paneId: string, onData: (data: Uint8Array) => void
 
       channelRef.current = channel;
       setConnectionStatus(paneId, "connected");
+      usePortHistoryStore.getState().addEntry(config.path, {
+        baudRate: config.baudRate,
+        dataBits: config.dataBits ?? 8,
+        stopBits: config.stopBits ?? 1,
+        parity: config.parity ?? "none",
+        flowControl: config.flowControl ?? "none",
+      }, label);
       addEntry({ level: "info", portPath: config.path, paneId, message: `Connected at ${config.baudRate} baud` });
     } catch (e) {
       const msg = String(e);

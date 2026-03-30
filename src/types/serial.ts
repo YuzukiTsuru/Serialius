@@ -28,3 +28,26 @@ export interface PortInfo {
   serialNumber?: string;
   product?: string;
 }
+
+// History config (subset of SerialPortConfig without path/timeout)
+export interface HistoryConfig {
+  baudRate: number;
+  dataBits: 5 | 6 | 7 | 8;
+  stopBits: 1 | 2;
+  parity: "none" | "odd" | "even";
+  flowControl: "none" | "software" | "hardware";
+}
+
+export interface PortHistoryEntry {
+  portPath: string;
+  config: HistoryConfig;
+  label?: string;
+  lastUsed: number;
+}
+
+export interface LogFileEntry {
+  path: string;
+  name: string;
+  size: number;
+  modified: number;
+}

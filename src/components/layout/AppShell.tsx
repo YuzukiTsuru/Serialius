@@ -30,7 +30,7 @@ export function AppShell() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-950 text-gray-100">
-      <Sidebar onConnectPort={openManager} />
+      <Sidebar onConnectPort={openManager} onConnectWithConfig={handleManagerConnect} />
       <ResizeHandle />
       <MainArea onAddTab={openManager} />
       <AnimatePresence>
